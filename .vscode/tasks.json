@@ -1,0 +1,26 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Dev",
+      "type": "shell",
+      "command": "pnpm dev",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Convex Dev",
+      "type": "shell",
+      "command": "npx convex dev",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Update Next.js Agent.md Docs",
+      "type": "shell",
+      "command": "npx @next/codemod@canary agents-md",
+      "group": "none",
+      "problemMatcher": []
+    },
+  ]
+}
