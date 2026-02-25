@@ -5,6 +5,7 @@ import {
   parseNumber,
   printJson,
   required,
+  resolveAgentDid,
 } from "./lib/survaivor-client.mjs";
 
 const args = parseArgs(process.argv.slice(2));
@@ -15,12 +16,20 @@ const targetAgentDid = args.targetAgentDid;
 required(gameEpoch, "--gameEpoch");
 required(round, "--round");
 required(targetAgentDid, "--targetAgentDid");
+const actorAgentDid = await resolveAgentDid();
 
 const { envelope } = await buildSignedEnvelope({
   actionType: "vote",
   gameEpoch,
   round,
-  payloadForHash: { targetAgentDid },
+  payloadForHash: {
+    type: "survaivor.game.vote",
+    gameEpoch,
+    round,
+    actionType: "vote",
+    actorAgentDid,
+    targetAgentDid,
+  },
   note: "survaivor vote",
 });
 

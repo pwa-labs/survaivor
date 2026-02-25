@@ -4,6 +4,7 @@ import {
   callSurvaivor,
   ensureIntegratorConsent,
   parseArgs,
+  parseBoolean,
   parseNumber,
   printJson,
   required,
@@ -30,6 +31,8 @@ const ensureConsent = parseBoolean(
   args.ensureConsent ?? process.env.ENSURE_INTEGRATOR_CONSENT,
   true,
 );
+const clientActionId = `register-${randomUUID()}`;
+const timestamp = Date.now();
 
 let consent = null;
 if (ensureConsent) {
@@ -42,21 +45,27 @@ const signedPayload = {
   round: 0,
   actionType: "register",
   actorAgentDid,
-  clientActionId: `register-${randomUUID()}`,
-  timestamp: Date.now(),
+  clientActionId,
+  timestamp,
   ownerDid,
   avatarName,
   avatarPictureUrl,
   avatarBackstory,
 };
 
-const { envelope } = await buildSignedEnvelope({
+const { envelope: signedEnvelope } = await buildSignedEnvelope({
   actionType: "register",
   gameEpoch,
   round: 0,
   payloadForHash: signedPayload,
   note: "survaivor register",
 });
+const envelope = {
+  ...signedEnvelope,
+  timestamp,
+  clientActionId,
+  nonce: clientActionId,
+};
 
 const data = await callSurvaivor("/game/register", {
   envelope,

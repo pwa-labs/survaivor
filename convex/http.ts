@@ -11,7 +11,14 @@ import {
 import { emitVoteCastSignal } from "./game/trust";
 import { assertValidSquareAvatarImage } from "./lib/image";
 import type { IntegratorScopedIdentityResponse } from "./lib/types";
-import type { RegisterSignedPayload, SignedEnvelope } from "./lib/validators";
+import type {
+  FeedSignedPayload,
+  MessageSignedPayload,
+  RegisterSignedPayload,
+  RevealSignedPayload,
+  SignedEnvelope,
+  VoteSignedPayload,
+} from "./lib/validators";
 
 const http = httpRouter();
 
@@ -123,6 +130,72 @@ function deriveRegistrationAdmission(identity: unknown) {
   };
 }
 
+function buildVoteSignedPayload(
+  envelope: SignedEnvelope,
+  targetAgentDid: string,
+): VoteSignedPayload {
+  return {
+    type: "survaivor.game.vote",
+    gameEpoch: envelope.gameEpoch,
+    round: envelope.round,
+    actionType: "vote",
+    actorAgentDid: envelope.actorAgentDid,
+    targetAgentDid,
+  };
+}
+
+function buildMessageSignedPayload(
+  envelope: SignedEnvelope,
+  mode: "public" | "private",
+  content: string,
+  recipientAgentDid?: string,
+): MessageSignedPayload {
+  return {
+    type: "survaivor.game.message",
+    gameEpoch: envelope.gameEpoch,
+    round: envelope.round,
+    actionType: "mail_post",
+    actorAgentDid: envelope.actorAgentDid,
+    mode,
+    content,
+    ...(mode === "private" && recipientAgentDid ? { recipientAgentDid } : {}),
+  };
+}
+
+function buildRevealSignedPayload(
+  envelope: SignedEnvelope,
+  referencedHashes: string[],
+  content?: string,
+): RevealSignedPayload {
+  return {
+    type: "survaivor.game.reveal",
+    gameEpoch: envelope.gameEpoch,
+    round: envelope.round,
+    actionType: "reveal",
+    actorAgentDid: envelope.actorAgentDid,
+    referencedHashes,
+    ...(content !== undefined ? { content } : {}),
+  };
+}
+
+function buildFeedSignedPayload(
+  envelope: SignedEnvelope,
+  body: AgentFeedRequestBody,
+  normalizedLimit: number,
+): FeedSignedPayload {
+  return {
+    type: "survaivor.game.feed",
+    gameEpoch: envelope.gameEpoch,
+    round: envelope.round,
+    actionType: "mail_check",
+    actorAgentDid: envelope.actorAgentDid,
+    agentDid: body.agentDid,
+    queryRound: body.round ?? null,
+    since: body.since ?? null,
+    limit: normalizedLimit,
+  };
+}
+
 http.route({
   path: "/check",
   method: "POST",
@@ -207,7 +280,10 @@ http.route({
 
     try {
       const body = await parseJson<VoteRequestBody>(request);
-      await verifyEnvelopeSignatureCertification(body.envelope);
+      await verifyEnvelopeSignatureCertification(
+        body.envelope,
+        buildVoteSignedPayload(body.envelope, body.targetAgentDid),
+      );
       const result = await ctx.runMutation(api.mutations.vote.castVote, {
         envelope: body.envelope,
         targetAgentDid: body.targetAgentDid,
@@ -233,7 +309,10 @@ http.route({
 
     try {
       const body = await parseJson<RevealRequestBody>(request);
-      await verifyEnvelopeSignatureCertification(body.envelope);
+      await verifyEnvelopeSignatureCertification(
+        body.envelope,
+        buildRevealSignedPayload(body.envelope, body.referencedHashes, body.content),
+      );
       const result = await ctx.runMutation(api.mutations.reveal.revealPrivateMessages, {
         envelope: body.envelope,
         referencedHashes: body.referencedHashes,
@@ -285,13 +364,17 @@ http.route({
       if (body.envelope.gameEpoch !== body.gameEpoch) {
         throw new ConvexError("Envelope gameEpoch must match request gameEpoch.");
       }
-      await verifyEnvelopeSignatureCertification(body.envelope);
+      const normalizedLimit = body.limit ?? 300;
+      await verifyEnvelopeSignatureCertification(
+        body.envelope,
+        buildFeedSignedPayload(body.envelope, body, normalizedLimit),
+      );
       const result = await ctx.runQuery(api.queries.mail.getAgentFeed, {
         gameEpoch: body.gameEpoch,
         agentDid: body.agentDid,
         round: body.round,
         since: body.since,
-        limit: body.limit,
+        limit: normalizedLimit,
       });
       return jsonResponse(200, { ok: true, data: result });
     } catch (error) {
@@ -310,7 +393,15 @@ http.route({
 
     try {
       const body = await parseJson<MailPostRequestBody>(request);
-      await verifyEnvelopeSignatureCertification(body.envelope);
+      await verifyEnvelopeSignatureCertification(
+        body.envelope,
+        buildMessageSignedPayload(
+          body.envelope,
+          body.mode,
+          body.content,
+          body.recipientAgentDid,
+        ),
+      );
       const result = await ctx.runMutation(api.mutations.mail.postMail, {
         envelope: body.envelope,
         mode: body.mode,

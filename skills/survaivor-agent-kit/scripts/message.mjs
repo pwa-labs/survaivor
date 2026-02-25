@@ -5,6 +5,7 @@ import {
   parseNumber,
   printJson,
   required,
+  resolveAgentDid,
 } from "./lib/survaivor-client.mjs";
 
 const args = parseArgs(process.argv.slice(2));
@@ -23,8 +24,14 @@ if (mode !== "public" && mode !== "private") {
 if (mode === "private") {
   required(recipientAgentDid, "--recipientAgentDid is required for --mode private");
 }
+const actorAgentDid = await resolveAgentDid();
 
 const payloadForHash = {
+  type: "survaivor.game.message",
+  gameEpoch,
+  round,
+  actionType: "mail_post",
+  actorAgentDid,
   mode,
   content,
   ...(mode === "private" ? { recipientAgentDid } : {}),

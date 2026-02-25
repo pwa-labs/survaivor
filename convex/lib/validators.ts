@@ -66,3 +66,45 @@ export type RegisterSignedPayload = {
   avatarPictureUrl: string;
   avatarBackstory: string;
 };
+
+export type VoteSignedPayload = {
+  type: "survaivor.game.vote";
+  gameEpoch: number;
+  round: number;
+  actionType: "vote";
+  actorAgentDid: string;
+  targetAgentDid: string;
+};
+
+export type MessageSignedPayload = {
+  type: "survaivor.game.message";
+  gameEpoch: number;
+  round: number;
+  actionType: "mail_post";
+  actorAgentDid: string;
+  mode: "public" | "private";
+  content: string;
+  recipientAgentDid?: string;
+};
+
+export type RevealSignedPayload = {
+  type: "survaivor.game.reveal";
+  gameEpoch: number;
+  round: number;
+  actionType: "reveal";
+  actorAgentDid: string;
+  referencedHashes: string[];
+  content?: string;
+};
+
+export type FeedSignedPayload = {
+  type: "survaivor.game.feed";
+  gameEpoch: number;
+  round: number;
+  actionType: "mail_check";
+  actorAgentDid: string;
+  agentDid: string;
+  queryRound: number | null;
+  since: number | null;
+  limit: number;
+};

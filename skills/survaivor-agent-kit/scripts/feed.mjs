@@ -12,7 +12,7 @@ const args = parseArgs(process.argv.slice(2));
 const gameEpoch = parseNumber(args.gameEpoch, null);
 const round = parseNumber(args.round, null);
 const since = parseNumber(args.since, null);
-const limit = parseNumber(args.limit, 100);
+const limit = parseNumber(args.limit, 300);
 const agentDid = await resolveAgentDid();
 const envelopeRound = round ?? 0;
 
@@ -24,9 +24,13 @@ const { envelope } = await buildSignedEnvelope({
   gameEpoch,
   round: envelopeRound,
   payloadForHash: {
+    type: "survaivor.game.feed",
     gameEpoch,
+    round: envelopeRound,
+    actionType: "mail_check",
+    actorAgentDid: agentDid,
     agentDid,
-    round: round ?? null,
+    queryRound: round ?? null,
     since: since ?? null,
     limit,
   },
