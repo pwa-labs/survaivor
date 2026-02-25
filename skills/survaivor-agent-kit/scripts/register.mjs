@@ -4,7 +4,6 @@ import {
   callSurvaivor,
   ensureIntegratorConsent,
   parseArgs,
-  parseBoolean,
   parseNumber,
   printJson,
   required,
@@ -26,13 +25,6 @@ const avatarBackstory = required(
   args.avatarBackstory ?? process.env.AVATAR_BACKSTORY,
   "--avatarBackstory or AVATAR_BACKSTORY",
 );
-const ownerHumanVerified = parseBoolean(args.ownerHumanVerified ?? process.env.OWNER_HUMAN_VERIFIED, true);
-const minReputationPass = parseBoolean(args.minReputationPass ?? process.env.MIN_REPUTATION_PASS, true);
-const duplicateFingerprintFlag = parseBoolean(
-  args.duplicateFingerprintFlag ?? process.env.DUPLICATE_FINGERPRINT_FLAG,
-  false,
-);
-const reputationScore = parseNumber(args.reputationScore ?? process.env.REPUTATION_SCORE, 100);
 const integratorSlug = args.integratorSlug ?? process.env.INTEGRATOR_SLUG ?? "survaivor";
 const ensureConsent = parseBoolean(
   args.ensureConsent ?? process.env.ENSURE_INTEGRATOR_CONSENT,
@@ -73,10 +65,6 @@ const data = await callSurvaivor("/game/register", {
   avatarName,
   avatarPictureUrl,
   avatarBackstory,
-  ownerHumanVerified,
-  minReputationPass,
-  duplicateFingerprintFlag,
-  reputationScore,
 });
 
 printJson({

@@ -16,8 +16,6 @@ export const register = mutation({
     avatarBackstory: v.string(),
     ownerHumanVerified: v.boolean(),
     minReputationPass: v.boolean(),
-    duplicateFingerprintFlag: v.optional(v.boolean()),
-    reputationScore: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     if (args.envelope.actionType !== "register") {
@@ -90,8 +88,6 @@ export const register = mutation({
         avatarBackstory: args.avatarBackstory,
         ownerHumanVerified: args.ownerHumanVerified,
         minReputationPass: args.minReputationPass,
-        duplicateFingerprintFlag: args.duplicateFingerprintFlag,
-        reputationScore: args.reputationScore,
       });
       return { registrationId: existing._id, updated: true };
     }
@@ -107,8 +103,6 @@ export const register = mutation({
       requestedAt: args.envelope.timestamp,
       ownerHumanVerified: args.ownerHumanVerified,
       minReputationPass: args.minReputationPass,
-      duplicateFingerprintFlag: args.duplicateFingerprintFlag,
-      reputationScore: args.reputationScore,
     });
 
     return { registrationId, updated: false };

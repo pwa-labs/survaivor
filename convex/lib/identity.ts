@@ -1,5 +1,6 @@
 import { canonicalize } from "json-canonicalize";
 
+import type { IntegratorScopedIdentityResponse } from "./types";
 import type { RegisterSignedPayload, SignedEnvelope } from "./validators";
 
 export type VerificationResult = {
@@ -83,10 +84,10 @@ export function buildRegistrationSignedPayload(input: {
   };
 }
 
-export async function lookupIdentity(did: string): Promise<VerificationResult> {
+export async function lookupIdentity(did: string): Promise<IntegratorScopedIdentityResponse> {
   const apiKey = getIdentityApiKey();
   if (!apiKey) {
-    return { ok: false, reason: "Missing IDENTITY_INTEGRATOR_API_KEY." };
+    throw new Error("Missing IDENTITY_INTEGRATOR_API_KEY.");
   }
 
   const baseUrl = getIdentityBaseUrl();
@@ -98,19 +99,15 @@ export async function lookupIdentity(did: string): Promise<VerificationResult> {
   });
 
   if (response.ok) {
-    const identity = (await response.json()) as Record<string, unknown>;
-    return { ok: true, identity };
+    return (await response.json()) as IntegratorScopedIdentityResponse;
   }
 
   const errorBody = await response.text();
   if (response.status === 404) {
-    return { ok: false, reason: `Identity not found for DID: ${did}.` };
+    throw new Error(`Identity not found for DID: ${did}.`);
   }
 
-  return {
-    ok: false,
-    reason: `Identity lookup failed (${response.status}): ${errorBody}`,
-  };
+  throw new Error(`Identity lookup failed (${response.status}): ${errorBody}`);
 }
 
 export async function certifySignatureContent(

@@ -10,6 +10,7 @@ import {
 } from "./game/identity";
 import { emitVoteCastSignal } from "./game/trust";
 import { assertValidSquareAvatarImage } from "./lib/image";
+import type { IntegratorScopedIdentityResponse } from "./lib/types";
 import type { RegisterSignedPayload, SignedEnvelope } from "./lib/validators";
 
 const http = httpRouter();
@@ -52,10 +53,6 @@ type RegisterRequestBody = {
   avatarName: string;
   avatarPictureUrl: string;
   avatarBackstory: string;
-  ownerHumanVerified: boolean;
-  minReputationPass: boolean;
-  duplicateFingerprintFlag?: boolean;
-  reputationScore?: number;
 };
 
 type VoteRequestBody = {
@@ -88,6 +85,43 @@ type RevealRequestBody = {
   referencedHashes: string[];
   content?: string;
 };
+
+const REGISTER_MIN_REPUTATION_SCORE = Number(process.env.REGISTER_MIN_REPUTATION_SCORE ?? 0);
+
+function deriveRegistrationAdmission(identity: unknown) {
+  if (!identity || typeof identity !== "object") {
+    throw new ConvexError("Identity lookup returned an invalid response.");
+  }
+
+  const root = identity as IntegratorScopedIdentityResponse;
+
+  const subject = root.subject;
+  if (subject?.type !== "agent") {
+    throw new ConvexError("Only agent identities can register.");
+  }
+  const profile = subject?.profile;
+  const owner = profile && "owner" in profile ? profile.owner : undefined;
+
+  const ownerHumanVerified =
+    owner?.type === "human" && owner.identityVerificationStatus === "verified";
+
+  const integratorScore = root.integratorScore?.score;
+  const globalScore = root.score?.score;
+  const reputationScore =
+    typeof integratorScore === "number" && Number.isFinite(integratorScore)
+      ? integratorScore
+      : typeof globalScore === "number" && Number.isFinite(globalScore)
+        ? globalScore
+        : undefined;
+
+  const minReputationPass =
+    reputationScore !== undefined && reputationScore >= REGISTER_MIN_REPUTATION_SCORE;
+
+  return {
+    ownerHumanVerified,
+    minReputationPass,
+  };
+}
 
 http.route({
   path: "/check",
@@ -131,7 +165,10 @@ http.route({
         registerBody.envelope,
         registerBody.signedPayload,
       );
-      await verifyAgentIdentityForRegister(registerBody.envelope.actorAgentDid);
+      const identity = await verifyAgentIdentityForRegister(
+        registerBody.envelope.actorAgentDid,
+      );
+      const admission = deriveRegistrationAdmission(identity);
 
       const result = await ctx.runMutation(api.mutations.register.register, {
         envelope: registerBody.envelope,
@@ -140,10 +177,8 @@ http.route({
         avatarName: registerBody.avatarName,
         avatarPictureUrl: registerBody.avatarPictureUrl,
         avatarBackstory: registerBody.avatarBackstory,
-        ownerHumanVerified: registerBody.ownerHumanVerified,
-        minReputationPass: registerBody.minReputationPass,
-        duplicateFingerprintFlag: registerBody.duplicateFingerprintFlag,
-        reputationScore: registerBody.reputationScore,
+        ownerHumanVerified: admission.ownerHumanVerified,
+        minReputationPass: admission.minReputationPass,
       });
       await emitRegisterTrustSignal(
         registerBody.envelope.actorAgentDid,

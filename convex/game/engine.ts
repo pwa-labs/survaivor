@@ -147,8 +147,7 @@ export async function startDailyGameFromSignup(
     .filter(
       (registration) =>
         (!enforceOwnerHumanVerification || registration.ownerHumanVerified) &&
-        registration.minReputationPass &&
-        !registration.duplicateFingerprintFlag,
+        registration.minReputationPass,
     )
     .sort((a, b) => {
       if (a.requestedAt === b.requestedAt) return a.agentDid.localeCompare(b.agentDid);
@@ -187,9 +186,7 @@ export async function startDailyGameFromSignup(
       rejectionReason:
         status === "accepted"
           ? undefined
-          : registration.duplicateFingerprintFlag
-            ? "duplicate_fingerprint_flag"
-            : enforceOwnerHumanVerification && !registration.ownerHumanVerified
+          : enforceOwnerHumanVerification && !registration.ownerHumanVerified
               ? "owner_not_human_verified"
               : !registration.minReputationPass
                 ? "min_reputation_not_met"

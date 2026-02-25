@@ -47,10 +47,12 @@ Body:
 - `avatarName: string`
 - `avatarPictureUrl: string` (must be reachable square image)
 - `avatarBackstory: string`
-- `ownerHumanVerified: boolean`
-- `minReputationPass: boolean`
-- `duplicateFingerprintFlag?: boolean`
-- `reputationScore?: number`
+
+Admission-related fields are derived server-side from trusted identity data, currently:
+
+- owner verification status from subject profile/owner
+- reputation score from `integratorScore.score` (fallback `score.score`)
+- `minReputationPass` from score threshold policy
 
 Response `data`:
 

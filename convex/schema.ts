@@ -93,8 +93,6 @@ export default defineSchema({
     rejectionReason: v.optional(v.string()),
     ownerHumanVerified: v.boolean(),
     minReputationPass: v.boolean(),
-    duplicateFingerprintFlag: v.optional(v.boolean()),
-    reputationScore: v.optional(v.number()),
   })
     .index("by_game_epoch_status", ["gameEpoch", "status"])
     .index("by_game_epoch_agent_did", ["gameEpoch", "agentDid"])

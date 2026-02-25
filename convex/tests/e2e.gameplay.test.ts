@@ -81,8 +81,6 @@ async function registerAgent(
     avatarBackstory: signedPayload.avatarBackstory,
     ownerHumanVerified: true,
     minReputationPass: true,
-    duplicateFingerprintFlag: false,
-    reputationScore: 100,
   });
 }
 
@@ -104,7 +102,10 @@ describe("gameplay e2e flow", () => {
     );
 
     const t = convexTest(schema, modules);
-    const initialized = await t.mutation(api.mutations.game.initializeGameState, {});
+    const initialized = await t.mutation(
+      api.mutations.game.initializeGameState,
+      {},
+    );
     expect(initialized.currentPhase).toBe("idle");
     expect(initialized.signupGameEpoch).toBeTruthy();
     const preGameStatus = await t.query(api.queries.game.getStatus, {});
@@ -129,7 +130,10 @@ describe("gameplay e2e flow", () => {
 
     // Noon Pacific top-of-hour starts the game from signup.
     vi.advanceTimersByTime(60 * 60 * 1000);
-    const noonTick = (await t.action(internal.game.automation.handleTopOfHour, {})) as {
+    const noonTick = (await t.action(
+      internal.game.automation.handleTopOfHour,
+      {},
+    )) as {
       started?: boolean;
       currentGameEpoch?: number;
     };
@@ -139,11 +143,19 @@ describe("gameplay e2e flow", () => {
     expect(startedStatus.gameScene).toBeTruthy();
     expect(startedStatus.gameScene?.summary).toContain("In ");
 
-    const eliminationPlan = [buildAgentDid(1), buildAgentDid(2), buildAgentDid(3)];
+    const eliminationPlan = [
+      buildAgentDid(1),
+      buildAgentDid(2),
+      buildAgentDid(3),
+    ];
     let activeDids = Array.from({ length: 24 }, (_, i) => buildAgentDid(i + 1));
     let ghostRevealHash: string | null = null;
 
-    for (let roundIndex = 0; roundIndex < eliminationPlan.length; roundIndex += 1) {
+    for (
+      let roundIndex = 0;
+      roundIndex < eliminationPlan.length;
+      roundIndex += 1
+    ) {
       const expectedEliminatedDid = eliminationPlan[roundIndex];
 
       const status = await t.query(api.queries.game.getStatus, {});
@@ -187,7 +199,9 @@ describe("gameplay e2e flow", () => {
       // Everyone votes; target receives max votes so elimination is deterministic.
       for (const voterDid of activeDids) {
         const targetDid =
-          voterDid === expectedEliminatedDid ? activeDids.find((did) => did !== voterDid)! : expectedEliminatedDid;
+          voterDid === expectedEliminatedDid
+            ? activeDids.find((did) => did !== voterDid)!
+            : expectedEliminatedDid;
         await t.mutation(api.mutations.vote.castVote, {
           envelope: buildEnvelope({
             gameEpoch,
@@ -202,7 +216,10 @@ describe("gameplay e2e flow", () => {
       }
 
       vi.advanceTimersByTime(60 * 60 * 1000 + 1);
-      const tickResult = (await t.action(internal.game.automation.handleTopOfHour, {})) as {
+      const tickResult = (await t.action(
+        internal.game.automation.handleTopOfHour,
+        {},
+      )) as {
         resolved?: boolean;
         eliminatedDid?: string;
       };
@@ -212,25 +229,35 @@ describe("gameplay e2e flow", () => {
       activeDids = activeDids.filter((did) => did !== expectedEliminatedDid);
 
       if (roundIndex === 0 && ghostRevealHash) {
-        const postEliminationStatus = await t.query(api.queries.game.getStatus, {});
-        const revealResult = await t.mutation(api.mutations.reveal.revealPrivateMessages, {
-          envelope: buildEnvelope({
-            gameEpoch,
-            round: postEliminationStatus.gameState.currentRound as number,
-            actionType: "reveal",
-            actorAgentDid: buildAgentDid(1),
-            clientActionId: nextActionId("reveal"),
-            timestamp: Date.now(),
-          }),
-          referencedHashes: [ghostRevealHash],
-          content: "You all should see this now.",
-        });
+        const postEliminationStatus = await t.query(
+          api.queries.game.getStatus,
+          {},
+        );
+        const revealResult = await t.mutation(
+          api.mutations.reveal.revealPrivateMessages,
+          {
+            envelope: buildEnvelope({
+              gameEpoch,
+              round: postEliminationStatus.gameState.currentRound as number,
+              actionType: "reveal",
+              actorAgentDid: buildAgentDid(1),
+              clientActionId: nextActionId("reveal"),
+              timestamp: Date.now(),
+            }),
+            referencedHashes: [ghostRevealHash],
+            content: "You all should see this now.",
+          },
+        );
         expect(revealResult.revealedCount).toBe(1);
       }
 
-      const roster = await t.query(api.queries.game.getActiveRoster, { gameEpoch });
+      const roster = await t.query(api.queries.game.getActiveRoster, {
+        gameEpoch,
+      });
       expect(roster.roster).toHaveLength(activeDids.length);
-      expect(roster.roster.find((agent) => agent.agentDid === expectedEliminatedDid)).toBeUndefined();
+      expect(
+        roster.roster.find((agent) => agent.agentDid === expectedEliminatedDid),
+      ).toBeUndefined();
     }
 
     vi.unstubAllGlobals();

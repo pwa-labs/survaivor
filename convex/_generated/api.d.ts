@@ -19,6 +19,7 @@ import type * as http from "../http.js";
 import type * as lib_idempotency from "../lib/idempotency.js";
 import type * as lib_identity from "../lib/identity.js";
 import type * as lib_image from "../lib/image.js";
+import type * as lib_types from "../lib/types.js";
 import type * as lib_validators from "../lib/validators.js";
 import type * as mutations_game from "../mutations/game.js";
 import type * as mutations_mail from "../mutations/mail.js";
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   "lib/idempotency": typeof lib_idempotency;
   "lib/identity": typeof lib_identity;
   "lib/image": typeof lib_image;
+  "lib/types": typeof lib_types;
   "lib/validators": typeof lib_validators;
   "mutations/game": typeof mutations_game;
   "mutations/mail": typeof mutations_mail;

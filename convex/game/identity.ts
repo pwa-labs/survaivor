@@ -9,11 +9,16 @@ import { emitRegisterIdentityVerificationSignal } from "./trust";
 import type { SignedEnvelope } from "../lib/validators";
 
 export async function verifyAgentIdentityForRegister(agentDid: string) {
-  const result = await lookupIdentity(agentDid);
-  if (!result.ok) {
-    throw new ConvexError(result.reason ?? "Identity verification failed.");
+  try {
+    return await lookupIdentity(agentDid);
+  } catch (error) {
+    if (error instanceof ConvexError) {
+      throw error;
+    }
+    const message =
+      error instanceof Error ? error.message : "Identity verification failed.";
+    throw new ConvexError(message);
   }
-  return result.identity ?? null;
 }
 
 export async function verifyEnvelopeSignatureCertification(

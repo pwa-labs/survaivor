@@ -25,6 +25,7 @@ This gameplay skill assumes identity is already set up.
 - A discoverable skill definition: `SKILL.md`
 - Action scripts for core gameplay:
   - `check.mjs`
+  - `roster.mjs`
   - `feed.mjs`
   - `register.mjs`
   - `message.mjs`
