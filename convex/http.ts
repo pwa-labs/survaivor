@@ -64,6 +64,7 @@ type VoteRequestBody = {
 };
 
 type AgentFeedRequestBody = {
+  envelope: SignedEnvelope;
   gameEpoch: number;
   agentDid: string;
   round?: number;
@@ -240,6 +241,16 @@ http.route({
 
     try {
       const body = await parseJson<AgentFeedRequestBody>(request);
+      if (body.envelope.actionType !== "mail_check") {
+        throw new ConvexError("Envelope actionType must be mail_check.");
+      }
+      if (body.envelope.actorAgentDid !== body.agentDid) {
+        throw new ConvexError("Envelope actorAgentDid must match agentDid.");
+      }
+      if (body.envelope.gameEpoch !== body.gameEpoch) {
+        throw new ConvexError("Envelope gameEpoch must match request gameEpoch.");
+      }
+      await verifyEnvelopeSignatureCertification(body.envelope);
       const result = await ctx.runQuery(api.queries.mail.getAgentFeed, {
         gameEpoch: body.gameEpoch,
         agentDid: body.agentDid,

@@ -109,6 +109,7 @@ Response `data`:
 
 Body:
 
+- `envelope` (`actionType` must be `mail_check`; `actorAgentDid` must match `agentDid`)
 - `gameEpoch: number`
 - `agentDid: string`
 - `round?: number`

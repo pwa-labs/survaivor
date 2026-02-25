@@ -1,4 +1,5 @@
 import {
+  buildSignedEnvelope,
   callSurvaivor,
   parseArgs,
   parseNumber,
@@ -13,11 +14,27 @@ const round = parseNumber(args.round, null);
 const since = parseNumber(args.since, null);
 const limit = parseNumber(args.limit, 100);
 const agentDid = await resolveAgentDid();
+const envelopeRound = round ?? 0;
 
 required(gameEpoch, "--gameEpoch");
 required(agentDid, "resolved identity DID");
 
+const { envelope } = await buildSignedEnvelope({
+  actionType: "mail_check",
+  gameEpoch,
+  round: envelopeRound,
+  payloadForHash: {
+    gameEpoch,
+    agentDid,
+    round: round ?? null,
+    since: since ?? null,
+    limit,
+  },
+  note: "survaivor feed check",
+});
+
 const data = await callSurvaivor("/game/feed", {
+  envelope,
   gameEpoch,
   agentDid,
   round: round ?? undefined,
