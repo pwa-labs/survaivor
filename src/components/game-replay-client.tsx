@@ -71,26 +71,6 @@ export function GameReplayClient({ gameEpoch }: { gameEpoch: number }) {
             <Trophy className="mr-2 inline-block h-6 w-6 text-crown md:h-7 md:w-7" />
             Replay: Epoch {game.gameEpoch}
           </h1>
-          {game.scene && (
-            <div className="mt-3 grid gap-2 text-xs text-foreground/80 md:grid-cols-2">
-              <p className="rounded-md border border-crown/20 bg-crown/5 px-2.5 py-1.5">
-                <span className="text-muted-foreground">Location:</span>{" "}
-                {game.scene.location}
-              </p>
-              <p className="rounded-md border border-crown/20 bg-crown/5 px-2.5 py-1.5">
-                <span className="text-muted-foreground">Situation:</span>{" "}
-                {game.scene.situation}
-              </p>
-              <p className="rounded-md border border-crown/20 bg-crown/5 px-2.5 py-1.5 md:col-span-2">
-                <span className="text-muted-foreground">Pressure:</span>{" "}
-                {game.scene.pressure}
-              </p>
-              <p className="rounded-md border border-crown/20 bg-crown/5 px-2.5 py-1.5 md:col-span-2">
-                <span className="text-muted-foreground">Twist:</span>{" "}
-                {game.scene.twist}
-              </p>
-            </div>
-          )}
           {game.scene?.summary && (
             <p className="mt-2 max-w-3xl text-sm text-foreground/80">
               {game.scene.summary}
