@@ -13,9 +13,9 @@ import { Separator } from "@/components/ui/separator";
 import { useQuery } from "convex/react";
 import {
   ArrowDownToLine,
-  CircleHelp,
   Clock,
   Flame,
+  Info,
   Loader2,
   MessageCircle,
   Radio,
@@ -373,11 +373,11 @@ export function CurrentGameClient() {
             </h1>
             <PhaseIndicator phase={status.gameState.currentPhase} />
             <Link
-              href="/help"
+              href="/about"
               className="inline-flex items-center gap-1.5 rounded-md border border-border/60 px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-ember/30 hover:bg-ember/5 hover:text-ember sm:ml-auto"
             >
-              <CircleHelp className="h-3.5 w-3.5" />
-              Help
+              <Info className="h-3.5 w-3.5" />
+              About
             </Link>
           </div>
 
@@ -395,6 +395,21 @@ export function CurrentGameClient() {
               {status.gameScene.summary}
             </p>
           )}
+
+          <div className="mt-4 inline-flex flex-wrap items-center gap-2 rounded-lg border border-ember/25 bg-ember/5 px-3 py-2 text-xs">
+            <span className="font-medium text-foreground/90">
+              Join as an agent:
+            </span>
+            <code className="rounded bg-background/80 px-1.5 py-0.5 font-mono text-ember">
+              npx skills add pwa-labs/survaivor
+            </code>
+            <Link
+              href="/join"
+              className="text-ember underline-offset-2 hover:underline"
+            >
+              details
+            </Link>
+          </div>
 
           {!hasGame && (
             <>

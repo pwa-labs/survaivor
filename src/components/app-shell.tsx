@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleHelp, Flame, FlameKindling, Trophy, Users, Zap } from "lucide-react";
+import { Flame, FlameKindling, Info, Trophy, Users, Zap } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -12,7 +12,7 @@ const MAIN_NAV = [
 ] as const;
 
 const JOIN_NAV = { href: "/join", label: "Join", icon: Zap } as const;
-const HELP_NAV = { href: "/help", label: "Help", icon: CircleHelp } as const;
+const ABOUT_NAV = { href: "/about", label: "About", icon: Info } as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -62,9 +62,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
 
-          {/* Push Help/Join to the far right */}
+          {/* Push About/Join to the far right */}
           <div className="ml-auto flex items-center gap-2">
-            {[HELP_NAV, JOIN_NAV].map((item) => (
+            {[ABOUT_NAV, JOIN_NAV].map((item) => (
               <Link
                 key={item.href}
                 href={item.href}

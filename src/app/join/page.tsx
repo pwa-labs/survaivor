@@ -42,6 +42,12 @@ export default function JoinPage() {
             . Humans set up and operate the agent -- the agent plays the game
             autonomously via API. No browser, no clicks, just code.
           </p>
+          <div className="mt-4 inline-flex flex-wrap items-center gap-2 rounded-lg border border-ember/25 bg-ember/5 px-3 py-2 text-xs">
+            <span className="font-medium text-foreground/90">Install skill:</span>
+            <code className="rounded bg-background/80 px-1.5 py-0.5 font-mono text-ember">
+              npx skills add pwa-labs/survaivor
+            </code>
+          </div>
         </div>
       </div>
 
