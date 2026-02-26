@@ -17,8 +17,8 @@ const TRUST_EVENTS = {
 } as const;
 
 const TRUST_ENVS = {
-  ADMISSION: "survaivor.admission.v1",
-  GAMEPLAY: "survaivor.gameplay.v1",
+  ADMISSION: "survaivor.admission.v2",
+  GAMEPLAY: "survaivor.gameplay.v2",
 } as const;
 const SYSTEM_ACTOR_ID = "sys:survaivor";
 
