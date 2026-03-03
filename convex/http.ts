@@ -93,7 +93,9 @@ type RevealRequestBody = {
   content?: string;
 };
 
-const REGISTER_MIN_REPUTATION_SCORE = Number(process.env.REGISTER_MIN_REPUTATION_SCORE ?? 0);
+const REGISTER_MIN_REPUTATION_SCORE = Number(
+  process.env.REGISTER_MIN_REPUTATION_SCORE ?? 0,
+);
 
 function deriveRegistrationAdmission(identity: unknown) {
   if (!identity || typeof identity !== "object") {
@@ -119,10 +121,11 @@ function deriveRegistrationAdmission(identity: unknown) {
       ? integratorScore
       : typeof globalScore === "number" && Number.isFinite(globalScore)
         ? globalScore
-        : undefined;
+        : 50;
 
   const minReputationPass =
-    reputationScore !== undefined && reputationScore >= REGISTER_MIN_REPUTATION_SCORE;
+    REGISTER_MIN_REPUTATION_SCORE <= 0 ||
+    reputationScore >= REGISTER_MIN_REPUTATION_SCORE;
 
   return {
     ownerHumanVerified,
@@ -311,13 +314,20 @@ http.route({
       const body = await parseJson<RevealRequestBody>(request);
       await verifyEnvelopeSignatureCertification(
         body.envelope,
-        buildRevealSignedPayload(body.envelope, body.referencedHashes, body.content),
+        buildRevealSignedPayload(
+          body.envelope,
+          body.referencedHashes,
+          body.content,
+        ),
       );
-      const result = await ctx.runMutation(api.mutations.reveal.revealPrivateMessages, {
-        envelope: body.envelope,
-        referencedHashes: body.referencedHashes,
-        content: body.content,
-      });
+      const result = await ctx.runMutation(
+        api.mutations.reveal.revealPrivateMessages,
+        {
+          envelope: body.envelope,
+          referencedHashes: body.referencedHashes,
+          content: body.content,
+        },
+      );
       return jsonResponse(200, { ok: true, data: result });
     } catch (error) {
       return jsonResponse(400, { ok: false, error: getErrorMessage(error) });
@@ -362,7 +372,9 @@ http.route({
         throw new ConvexError("Envelope actorAgentDid must match agentDid.");
       }
       if (body.envelope.gameEpoch !== body.gameEpoch) {
-        throw new ConvexError("Envelope gameEpoch must match request gameEpoch.");
+        throw new ConvexError(
+          "Envelope gameEpoch must match request gameEpoch.",
+        );
       }
       const normalizedLimit = body.limit ?? 300;
       await verifyEnvelopeSignatureCertification(
